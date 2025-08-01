@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { dataGenerator } from '@/lib/dataGenerator';
 import { apiService } from '@/lib/api';
+import axios from 'axios';
 
 export default function SensorDataForm() {
   const [sensorData, setSensorData] = useState('');
@@ -45,9 +46,18 @@ export default function SensorDataForm() {
       
       // Reset progress after 2 seconds
       setTimeout(() => setUploadProgress(0), 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Upload failed:', error);
-      setMessage(error.message || error.response?.data?.message || 'Failed to upload data. Please try again.');
+      
+      let errorMessage = 'Failed to upload data. Please try again.';
+      
+      if (axios.isAxiosError(error)) {
+        errorMessage = error.response?.data?.message || error.message || errorMessage;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      setMessage(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -61,9 +71,12 @@ export default function SensorDataForm() {
       const data = await dataGenerator.generateRealisticData(20); // Reduced to 20 records
       setSensorData(JSON.stringify(data, null, 2));
       setMessage('Random data generated successfully! (20 records)');
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Generation failed:', error);
-      setMessage('Failed to generate random data');
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to generate random data';
+      setMessage(errorMessage);
     } finally {
       setIsGenerating(false);
     }

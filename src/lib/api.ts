@@ -44,9 +44,18 @@ sensorAPI.interceptors.response.use(
   }
 );
 
+// Define types for sensor data
+interface SensorReading {
+  timestamp: string;
+  field_id: string;
+  sensor_type: string;
+  reading_value: number;
+  unit: string;
+}
+
 // API service functions
 export const apiService = {
-  async uploadSensorData(data: any) {
+  async uploadSensorData(data: SensorReading[]) {
     const response = await sensorAPI.post('/sensor-data', data);
     return response.data;
   },

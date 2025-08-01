@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { apiService } from '@/lib/api';
+import axios from 'axios';
 
 interface AnalyticsData {
   total_readings: number;
@@ -29,8 +30,16 @@ export default function Dashboard() {
         setLoading(true);
         const data = await apiService.getAnalytics();
         setAnalytics(data);
-      } catch (err: any) {
-        setError(err.message || 'Failed to fetch analytics');
+      } catch (err: unknown) {
+        let errorMessage = 'Failed to fetch analytics';
+        
+        if (axios.isAxiosError(err)) {
+          errorMessage = err.response?.data?.message || err.message || errorMessage;
+        } else if (err instanceof Error) {
+          errorMessage = err.message;
+        }
+        
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
